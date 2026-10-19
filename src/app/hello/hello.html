@@ -1,0 +1,14 @@
+<p>This is my first Angular Component</p>
+
+<h1>{{title}}</h1>
+
+
+<!-- button is property binding, and click is event binding-->
+<button [disabled]="isDisabled" (click)="onClick()">Toggle</button>
+<h1>Count: {{ count() }} </h1>
+<h1>Double Count: {{ doubleCount() }}</h1>
+<!-- <h1>Double Method: {{ getDoubleCount() }}</h1> -->
+
+<button (click)="addCount()">+</button>
+<button (click)="minusCount()">-</button>
+<button (click)="resetCount()">reset</button>

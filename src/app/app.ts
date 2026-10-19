@@ -1,9 +1,13 @@
+import { ProductCard } from './products/product-card/product-card';
+import { ProductsGrid } from './products/products-grid/products-grid';
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Header } from './header/header';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Header, ProductsGrid],  /* ProductCard] */
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

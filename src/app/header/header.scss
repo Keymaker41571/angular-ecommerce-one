@@ -1,0 +1,29 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+
+.main-header {
+  padding: 0 6px;
+  position: relative;
+  box-shadow: 0 1px 8px rgb(0, 0, 0, .3);
+  z-index: 9;
+}
+
+.branding {
+  display: flex;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: auto 0;
+  line-height: 50px;
+  padding: 0 64px 0 8px;
+}
+
+
+button > mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
