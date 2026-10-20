@@ -10,6 +10,6 @@ export class ProductService {
   private http = inject(HttpClient);
 
   getProducts() {
-    return this.http.get<Product[]>('/products.json');
+    return this.http.get<Product[]>('products.json');
   }
 }
