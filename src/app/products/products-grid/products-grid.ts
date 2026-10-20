@@ -1,11 +1,13 @@
+
 import { CartService } from '../../services/cart-service';
 import { Product } from '../product';
 import { ProductCard } from './../product-card/product-card';
-import { Component, computed, signal, Injectable, inject } from '@angular/core';
+import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { ProductService } from '../../services/product-service';
 
 @Component({
   selector: 'app-products-grid',
@@ -13,10 +15,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   templateUrl: './products-grid.html',
   styleUrl: './products-grid.scss',
 })
-export class ProductsGrid {
+export class ProductsGrid implements OnInit {
   // this creates a writable signal that initiates the value to an empty search
   // reference value is only readable
   protected readonly searchTerm = signal('');
+
+  private productService = inject(ProductService);
+
+  protected readonly cartService = inject(CartService);
+  products = signal<Product[]>([]);
+  // because we only make a reference to the signal in the template
+  // read only mean that the value is being changed not the reference to object (signal)
+
+  ngOnInit(): void {
+    this.productService.getProducts().subscribe((products) => {
+      this.products.set(products);
+    });
+  }
 
   /*
   private cartService!: CartService;
@@ -26,10 +41,65 @@ export class ProductsGrid {
   }
   */
 
-  protected readonly cartService = inject(CartService);
+  protected readonly filterdProducts = computed(() => {
+    const term = this.searchTerm().toLocaleLowerCase().trim();
+    if (!term) return this.products();
 
-  // because we only make a reference to the signal in the template
-  // read only mean that the value is being changed not the reference to object (signal)
+    // includse return true if searchString appears as a substring of the reseult converthing
+    // this object to a string other return false
+    return this.products().filter(
+      (product) =>
+        product.name.toLocaleLowerCase().includes(term) ||
+        product.description.toLocaleLowerCase().includes(term),
+    );
+  });
+
+  protected clearSearch() {
+    this.searchTerm.set('');
+  }
+
+  protected onAddToCart(product: Product): void {
+    // console.log('Added to cart: ', product.name);
+    this.cartService.addToCart(product);
+  }
+
+  protected onDeleteFromCart(product: Product): void {
+    this.cartService.removeFromCart(product);
+  }
+  /*
+  protected trimSearch() {
+    // this how we update an existing signal by using the update method to get its
+    // current value, and from the current value we can computer and calculate a secondary
+    // value and update the existing signal
+    this.searchTerm.update((value => value.trim()));
+  }
+    */
+}
+
+/*
+protected readonly products = signal<Product[]>([ ... ]);
+
+protected → the property can be accessed by the class and its template,
+but not generally from outside the component.
+
+readonly → you cannot reassign the products variable itself after it's created.
+You can still change the signal's value with methods like .set() or .update().
+
+products → the variable/property name.
+
+signal → Angular's function that creates a signal.
+
+<Product[]> → this is a TypeScript generic type. It tells signal that its value
+is an array ([]) of Product objects. Similar conceptually to Java generics like List<Product>.
+
+[ ... ] → the actual array of Product objects being stored inside the signal.
+
+So conceptually:
+
+products → signal → Product[] → [Product object, Product object, Product object]
+*/
+
+/*
   protected readonly products = signal<Product[]>([
     {
       id: 1,
@@ -134,61 +204,4 @@ export class ProductsGrid {
       price: 149.99,
     },
   ]);
-
-  protected readonly filterdProducts = computed(() => {
-    const term = this.searchTerm().toLocaleLowerCase().trim();
-    if (!term) return this.products();
-
-    // includse return true if searchString appears as a substring of the reseult converthing
-    // this object to a string other return false
-    return this.products().filter(
-      (product) =>
-        product.name.toLocaleLowerCase().includes(term) ||
-        product.description.toLocaleLowerCase().includes(term),
-    );
-  });
-
-  protected clearSearch() {
-    this.searchTerm.set('');
-  }
-
-  protected onAddToCart(product: Product): void {
-    // console.log('Added to cart: ', product.name);
-    this.cartService.addToCart(product);
-  }
-
-  protected onDeleteFromCart(product: Product): void {
-    this.cartService.removeFromCart(product);
-  }
-  /*
-  protected trimSearch() {
-    // this how we update an existing signal by using the update method to get its
-    // current value, and from the current value we can computer and calculate a secondary
-    // value and update the existing signal
-    this.searchTerm.update((value => value.trim()));
-  }
-    */
-}
-
-/*
-protected readonly products = signal<Product[]>([ ... ]);
-
-protected → the property can be accessed by the class and its template,
-but not generally from outside the component.
-
-readonly → you cannot reassign the products variable itself after it's created.
-You can still change the signal's value with methods like .set() or .update().
-
-products → the variable/property name.
-
-signal → Angular's function that creates a signal.
-
-<Product[]> → this is a TypeScript generic type. It tells signal that its value
-is an array ([]) of Product objects. Similar conceptually to Java generics like List<Product>.
-
-[ ... ] → the actual array of Product objects being stored inside the signal.
-
-So conceptually:
-
-products → signal → Product[] → [Product object, Product object, Product object]
-*/
+  */
