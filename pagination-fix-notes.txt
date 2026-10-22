@@ -1,0 +1,12 @@
+Pagination Fix Notes
+
+Problem
+The ProductsGrid template used <app-pagination>, but the standalone ProductsGrid component did not import the Pagination component. Angular therefore reported that app-pagination was not a known element.
+
+Changes made
+- Added the Pagination component import to products-grid.ts and registered it in the ProductsGrid component's imports array.
+- Removed the <app-pagination> element from pagination.html. That element was inside the Pagination component's own template and would have caused recursive rendering.
+- Removed the leftover Test button from pagination.html.
+
+Validation
+The editor reported no errors in the touched files. The Angular build was not run.

@@ -1,17 +1,26 @@
-
 import { CartService } from '../../services/cart-service';
 import { Product } from '../product';
 import { ProductCard } from './../product-card/product-card';
-import { Component, computed, signal, inject, OnInit } from '@angular/core';
+import { Component, computed, signal, inject, OnInit, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ProductService } from '../../services/product-service';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { Pagination } from '../../pagination/pagination';
 
 @Component({
   selector: 'app-products-grid',
-  imports: [ProductCard, MatIcon, MatInputModule, FormsModule, MatFormFieldModule],
+  imports: [
+    ProductCard,
+    Pagination,
+    MatIcon,
+    MatInputModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatPaginatorModule,
+  ],
   templateUrl: './products-grid.html',
   styleUrl: './products-grid.scss',
 })
@@ -22,10 +31,34 @@ export class ProductsGrid implements OnInit {
 
   private productService = inject(ProductService);
 
+  protected readonly totalPage = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
+
+
+
+  readonly pageSize = signal(25);
+
+
+  currentPage = signal(1);
+
+  protected readonly paginatedProducts = computed(() => {
+  const startIndex = (this.currentPage() - 1) * this.pageSize();
+  const endIndex = startIndex + this.pageSize();
+
+  return this.filteredProducts().slice(startIndex, endIndex);
+  });
+
+
   protected readonly cartService = inject(CartService);
   products = signal<Product[]>([]);
   // because we only make a reference to the signal in the template
   // read only mean that the value is being changed not the reference to object (signal)
+
+
+
+  protected onPageChanged(event: PageEvent): void {
+  this.currentPage.set(event.pageIndex + 1);
+  this.pageSize.set(event.pageSize);
+}
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe((products) => {
@@ -41,7 +74,9 @@ export class ProductsGrid implements OnInit {
   }
   */
 
-  protected readonly filterdProducts = computed(() => {
+
+
+  protected readonly filteredProducts = computed(() => {
     const term = this.searchTerm().toLocaleLowerCase().trim();
     if (!term) return this.products();
 
