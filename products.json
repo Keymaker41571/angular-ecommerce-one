@@ -152,11 +152,6 @@
     "description": "Compact action camera for recording outdoor activities and adventures.",
     "price": 189.99,
     "originalPrice": 219.99
-  },
-  {
-    "id": 25,
-    "name": "Smart Plug Set",
-    "description": "Smart plugs for scheduling and remotely controlling compatible household devices.",
-    "price": 32.99
   }
+
 ]
