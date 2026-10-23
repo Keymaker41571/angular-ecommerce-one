@@ -5,6 +5,13 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+:root {
+  @include mat.toolbar-overrides((
+    container-background-color: rgb(255, 255, 255),
+    container-text-color: rgb(0, 0, 0),
+  ));
+}
+
 html {
   height: 100%;
   @include mat.theme(
@@ -30,7 +37,7 @@ body {
   // variables at https://material.angular.dev/guide/system-variables
 
   // background-color: var(--mat-sys-surface);
-  background-color: #dde4f0; // previously the line on top was in effect
+  background-color: #ebeef5; // previously the line on top was in effect
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
 
@@ -49,3 +56,9 @@ body {
 }
 
 */
+
+.search-field .mat-mdc-text-field-wrapper {
+  background-color: white;
+  border-radius: 12px;
+}
+
