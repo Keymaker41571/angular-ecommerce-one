@@ -4,6 +4,7 @@
 
 
 .main-header {
+  min-height: 56px;
   padding: 0 6px;
   position: relative;
   box-shadow: 0 1px 8px rgb(0, 0, 0, .3);
@@ -16,14 +17,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   margin: auto 0;
-  line-height: 50px;
-  padding: 0 64px 0 8px;
+  font-size: 18px;
+  line-height: normal;
+  padding: 0 16px 0 8px;
 }
 
-
 button > mat-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 

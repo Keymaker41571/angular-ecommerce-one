@@ -1,14 +1,17 @@
+import { ProductService } from './../../services/product-service';
 import { CartService } from '../../services/cart-service';
 import { Product } from '../product';
 import { ProductCard } from './../product-card/product-card';
-import { Component, computed, signal, inject, OnInit, input } from '@angular/core';
+import { Component, computed, signal, inject, OnInit, DestroyRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { ProductService } from '../../services/product-service';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Pagination } from '../../pagination/pagination';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
+import { CartNotification } from '../../cart/cart-notification/cart-notification';
 
 @Component({
   selector: 'app-products-grid',
@@ -27,54 +30,29 @@ import { Pagination } from '../../pagination/pagination';
 export class ProductsGrid implements OnInit {
   // this creates a writable signal that initiates the value to an empty search
   // reference value is only readable
-  protected readonly searchTerm = signal('');
-
-  private productService = inject(ProductService);
-
-  protected readonly totalPage = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
-
-
 
   readonly pageSize = signal(25);
-
-
   currentPage = signal(1);
 
+  private dialog = inject(MatDialog);
+  private productService = inject(ProductService);
+
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly searchTerm = signal('');
+  protected readonly totalPage = computed(() =>
+    Math.ceil(this.filteredProducts().length / this.pageSize()),
+  );
+
   protected readonly paginatedProducts = computed(() => {
-  const startIndex = (this.currentPage() - 1) * this.pageSize();
-  const endIndex = startIndex + this.pageSize();
-
-  return this.filteredProducts().slice(startIndex, endIndex);
+    const startIndex = (this.currentPage() - 1) * this.pageSize();
+    const endIndex = startIndex + this.pageSize();
+    return this.filteredProducts().slice(startIndex, endIndex);
   });
-
 
   protected readonly cartService = inject(CartService);
   products = signal<Product[]>([]);
   // because we only make a reference to the signal in the template
   // read only mean that the value is being changed not the reference to object (signal)
-
-
-
-  protected onPageChanged(event: PageEvent): void {
-  this.currentPage.set(event.pageIndex + 1);
-  this.pageSize.set(event.pageSize);
-}
-
-  ngOnInit(): void {
-    this.productService.getProducts().subscribe((products) => {
-      this.products.set(products);
-    });
-  }
-
-  /*
-  private cartService!: CartService;
-
-  ProductGrid(CartService: CartService) {
-    this.cartService = CartService;
-  }
-  */
-
-
 
   protected readonly filteredProducts = computed(() => {
     const term = this.searchTerm().toLocaleLowerCase().trim();
@@ -89,19 +67,71 @@ export class ProductsGrid implements OnInit {
     );
   });
 
+  protected onPageChanged(event: PageEvent): void {
+    this.currentPage.set(event.pageIndex + 1);
+    this.pageSize.set(event.pageSize);
+  }
+
   protected clearSearch() {
     this.searchTerm.set('');
   }
 
   protected onAddToCart(product: Product): void {
-    // console.log('Added to cart: ', product.name);
     this.cartService.addToCart(product);
+
+    this.dialog.open(CartNotification, {
+      data: `${product.name} added to cart!`,
+      width: '450px',
+      height: '350px',
+      maxWidth: '90vw',
+      panelClass: 'cart-notification-dialog',
+    });
   }
 
   protected onDeleteFromCart(product: Product): void {
     this.cartService.removeFromCart(product);
+
+    this.dialog.open(CartNotification, {
+      data: `${product.name} removed from cart!`,
+      width: '450px',
+      height: '350px',
+      maxWidth: '90vw',
+      panelClass: 'cart-notification-dialog',
+    });
   }
-  /*
+
+  ngOnInit(): void {
+    this.productService
+      .getProducts()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((products) => this.products.set(products));
+  }
+}
+
+/*
+  ngOnInit(): void {
+    this.productService.getProducts().subscribe((products) => {
+      this.products.set(products);
+    });
+  }
+  */
+
+/*
+  ngOnDestroy() {
+    this.products().unsubscribe();
+
+  }
+  */
+
+/*
+  private cartService!: CartService;
+
+  ProductGrid(CartService: CartService) {
+    this.cartService = CartService;
+  }
+  */
+
+/*
   protected trimSearch() {
     // this how we update an existing signal by using the update method to get its
     // current value, and from the current value we can computer and calculate a secondary
@@ -109,7 +139,6 @@ export class ProductsGrid implements OnInit {
     this.searchTerm.update((value => value.trim()));
   }
     */
-}
 
 /*
 protected readonly products = signal<Product[]>([ ... ]);
@@ -130,113 +159,4 @@ is an array ([]) of Product objects. Similar conceptually to Java generics like 
 [ ... ] → the actual array of Product objects being stored inside the signal.
 
 So conceptually:
-
-products → signal → Product[] → [Product object, Product object, Product object]
 */
-
-/*
-  protected readonly products = signal<Product[]>([
-    {
-      id: 1,
-      name: 'Premium Wireless Earbuds',
-      description:
-        'High-quality wireless headphones with noise cancellation and premium sound quality.',
-      price: 199.99,
-      originalPrice: 249.99,
-    },
-    {
-      id: 2,
-      name: 'Smart Fitness Watch',
-      description:
-        'Track your fitness goals with this advanced smartwatch featuring heart rate monitoring.',
-      price: 299.99,
-    },
-    {
-      id: 3,
-      name: 'Portable Bluetooth Speaker',
-      description: 'Compact speaker with powerful bass and 12-hour battery life.',
-      price: 79.99,
-      originalPrice: 99.99,
-    },
-    {
-      id: 4,
-      name: 'Mechanical Gaming Keyboard',
-      description: 'Responsive mechanical keyboard with RGB lighting and customizable keys.',
-      price: 89.99,
-      originalPrice: 119.99,
-    },
-    {
-      id: 5,
-      name: 'Wireless Gaming Mouse',
-      description: 'Lightweight wireless mouse with adjustable DPI and long battery life.',
-      price: 59.99,
-    },
-    {
-      id: 6,
-      name: '27-Inch 4K Monitor',
-      description:
-        'Ultra-high-definition monitor with vibrant colors and a sharp, detailed display.',
-      price: 349.99,
-      originalPrice: 399.99,
-    },
-    {
-      id: 7,
-      name: 'Wireless Keyboard',
-      description:
-        'Compact wireless keyboard with quiet, responsive keys for comfortable everyday typing and productivity.',
-      price: 49.99,
-    },
-    {
-      id: 8,
-      name: 'USB-C Hub',
-      description:
-        'Multi-port USB-C hub with HDMI output and extra USB connections for external displays and devices.',
-      price: 34.99,
-    },
-    {
-      id: 9,
-      name: 'HD Webcam',
-      description:
-        '1080p webcam delivering clear video quality for online meetings, virtual classes, and casual streaming.',
-      price: 59.99,
-    },
-    {
-      id: 10,
-      name: 'Adjustable Laptop Stand',
-      description:
-        'Sturdy adjustable laptop stand that raises your screen for comfortable viewing while working or studying.',
-      price: 29.99,
-    },
-
-    {
-      id: 11,
-      name: 'Wireless Charging Pad',
-      description:
-        'Fast wireless charging pad with a slim design, reliable charging performance, and compatibility with supported smartphones and wireless charging devices.',
-      price: 39.99,
-      originalPrice: 49.99,
-    },
-    {
-      id: 12,
-      name: '4K Computer Monitor',
-      description:
-        'Ultra-high-definition monitor with vibrant colors, sharp image quality, and a spacious display for work and entertainment.',
-      price: 349.99,
-    },
-    {
-      id: 13,
-      name: 'External SSD',
-      description:
-        'Portable solid-state drive offering fast file transfers, reliable storage, and plenty of space for documents, photos, and applications.',
-      price: 109.99,
-      originalPrice: 139.99,
-    },
-    {
-      id: 14,
-      name: 'Noise-Cancelling Headphones',
-      description:
-        'Comfortable over-ear headphones featuring active noise cancellation, rich audio, and long battery life for travel and everyday listening.',
-      price: 149.99,
-    },
-  ]);
-  */
